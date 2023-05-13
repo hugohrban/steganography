@@ -1,9 +1,9 @@
-package cz.cuni.mff.hrbanh.steganography;
+package main.java.cz.cuni.mff.hrbanh.steganography;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,11 +12,9 @@ public final class HiddenFile {
     private final int bitsPerByte;
     public static final byte[] magicNumber = new byte[] {0x73, 0x74, 0x65, 0x67, 0x61,
             0x6e, 0x6f, 0x67, 0x72, 0x61, 0x70, 0x68, 0x79};
-
-    public MyImage hideInImage(String imgPath) throws IOException{
+    public MyImage HideInImage(String imgPath) throws IOException{
         MyImage img = new MyImage(imgPath);
         int[] pixels = img.pixels;
-
         int data_ix = 0;
         byte buffer = data[data_ix];
         int bufferMask = 0b1;
@@ -27,7 +25,7 @@ public final class HiddenFile {
             for (int j = 0; j < 4; j++){                        // for each byte in pixel - B, G, R, A
                 for (int k = 0; k < bitsPerByte; k++){          // for `bitsPerByte` least significant bits in byte
                     bit = (buffer & bufferMask) != 0;           // get current bit from buffer
-                    bitMask = 1 << (k + 8*j);                   // shift bit to correct position
+                    bitMask = 1 << (k + 8*j);                   // shift bitMask to correct position
                     if (bit){
                         pixels[i] |= bitMask;
                     } else {
@@ -48,7 +46,12 @@ public final class HiddenFile {
                 }
             }
         }
-        return img;
+        if (data_ix < data.length-1){
+            throw new IOException("File is too large to be hidden in image.");
+        }
+        else {
+            return img;
+        }
     }
     private static void WriteToFile(String path, byte[] data) throws IOException{
         File file = new File(path);
@@ -60,12 +63,12 @@ public final class HiddenFile {
     public static void ExtractFromImage(String path) throws IOException{
         MyImage img = new MyImage(path);
         int[] pixels = img.pixels;
-        List<Byte> data = new ArrayList<>();
+        List<Byte> dataArr = new ArrayList<>();
         byte buffer = 0;
         int bufferMask = 1;
         boolean bit;
         int filenameLength = 0;     // in bytes
-        int dataLength = 0;         // length of data (in bits)
+        int dataLength = 0;         // length of data (in bytes)
         int bitsPerByte = 1;
         String fileName = "";
 
@@ -79,47 +82,44 @@ public final class HiddenFile {
                     bufferMask <<= 1;
                     if (bufferMask >= 0x100){
                         bufferMask = 1;
-                        data.add(buffer);
+                        dataArr.add(buffer);
                         buffer = 0;
                     }
-                    if (data.size() == 13 && bufferMask == 1){
+                    if (dataArr.size() == 13 && bufferMask == 1){
                         //TODO check if magic number equals, otherwise throw exception
                         for (int l = 0; l < magicNumber.length; l++){
-                            if (data.get(l) != magicNumber[l]){
+                            if (dataArr.get(l) != magicNumber[l]){
                                 throw new IllegalArgumentException("Magic number does not match");
                             }
                         }
-                        int q=0;
                     }
-                    if (data.size() == 14 && bufferMask == 1){
-                        bitsPerByte = data.get(13);
+                    if (dataArr.size() == 14 && bufferMask == 1){
+                        bitsPerByte = dataArr.get(13);
                         if (bitsPerByte < 1 || bitsPerByte > 8){
                             throw new IllegalArgumentException("bitsPerByte must be between 1 and 8");
                         }
                         break;
                     }
-                    if (data.size() == 15 && bufferMask == 1){
-                        filenameLength = data.get(14);
+                    if (dataArr.size() == 15 && bufferMask == 1){
+                        filenameLength = dataArr.get(14);
                     }
-                    if (data.size() == 15 + filenameLength && bufferMask == 1){
+                    if (dataArr.size() == 15 + filenameLength && bufferMask == 1){
                         byte[] fileNameBytes = new byte[filenameLength];
                         for (int l = 0; l < filenameLength; l++){
-                            fileNameBytes[l] = data.get(15 + l);
+                            fileNameBytes[l] = dataArr.get(15 + l);
                         }
-                        fileName = "extracted_" + new String(fileNameBytes);
+                        fileName = "extracted_" + new String(fileNameBytes, StandardCharsets.UTF_8);
                     }
-                    if (data.size() == 15 + filenameLength + 4 && bufferMask == 1){
-                        dataLength = (int)(data.get(15 + filenameLength) & 0xFF) |
-                                ((int)(data.get(15 + filenameLength + 1) & 0xFF) << 8) |
-                                ((int)(data.get(15 + filenameLength + 2) & 0xFF) << 16) |
-                                ((int)(data.get(15 + filenameLength + 3) & 0xFF) << 24);
-                        dataLength /= 8;
+                    if (dataArr.size() == 15 + filenameLength + 4 && bufferMask == 1){
+                        dataLength = (int)(dataArr.get(15 + filenameLength) & 0xFF) |
+                                ((int)(dataArr.get(15 + filenameLength + 1) & 0xFF) << 8) |
+                                ((int)(dataArr.get(15 + filenameLength + 2) & 0xFF) << 16) |
+                                ((int)(dataArr.get(15 + filenameLength + 3) & 0xFF) << 24);
                     }
-                    if (data.size() == 15 + filenameLength + 4 + dataLength && bufferMask == 1){
-                        //TODO write data to file
+                    if (dataArr.size() == 15 + filenameLength + 4 + dataLength && bufferMask == 1){
                         byte[] dataBytes = new byte[dataLength];
                         for (int l = 0; l < dataLength; l++){
-                            dataBytes[l] = data.get(15 + filenameLength + 4 + l);
+                            dataBytes[l] = dataArr.get(15 + filenameLength + 4 + l);
                         }
                         WriteToFile(fileName, dataBytes);
                         return;
@@ -127,22 +127,20 @@ public final class HiddenFile {
                 }
             }
         }
-        int q=0; // we should never get here
     }
     private byte[] ReadFileBin(String path) throws IOException {
         File file = new File(path);
         FileInputStream fis = new FileInputStream(file);
-
         byte[] data = new byte[(int) file.length()];
         fis.read(data);
-
         fis.close();
         return data;
     }
     public HiddenFile(String path, int bitsPerByte) throws IOException{
         String filename = path.substring(path.lastIndexOf('/')+1);
         this.bitsPerByte = bitsPerByte;
-        int filenameLength = filename.length();
+        byte[] fileNameBytes = filename.getBytes();
+        int filenameLength = fileNameBytes.length;
         byte[] data = ReadFileBin(path);
         this.data = new byte[data.length + 19 + filenameLength];
 
@@ -158,21 +156,18 @@ public final class HiddenFile {
         //length of filename - byte 14
 
         if (filenameLength > 255){
-            throw new IllegalArgumentException("filename too long");
+            throw new IllegalArgumentException("Filename too long. Must be less than 255 characters.");
         }
         this.data[14] = (byte)filenameLength;
 
         //filename - byte 15, .. , 16 + filename.length - one byte per character in filename
-        System.arraycopy(filename.getBytes(), 0, this.data, 15, filenameLength);
+        System.arraycopy(fileNameBytes, 0, this.data, 15, filenameLength);
 
-        // num_bits_in_file - 4 bytes
-        int fileSize = data.length * 8;     // in bits
-        // int mask = 0b1111_1111;
+        // num_bytes_in_file - 4 bytes
+        int fileSize = data.length;         // in bytes
         for (int i = 0; i < 4; i++){
-            // int part = (mask & fileSize) >> 8*i;
             byte part = (byte)(fileSize >> 8*i);
             this.data[15+filenameLength+i] = part;
-            // mask <<= 8;
         }
 
         // file data

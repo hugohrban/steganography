@@ -1,15 +1,14 @@
-package cz.cuni.mff.hrbanh.steganography;
+package main.java.cz.cuni.mff.hrbanh.steganography;
 
 import java.io.IOException;
-import javax.imageio.ImageIO;
 
 public class Main {
-    private void Hide(String imgPath, String filePath) throws IOException {
-//        MyImage img = new MyImage(imgPath);
-        HiddenFile hf = new HiddenFile(filePath, 1);
-        hf.hideInImage(imgPath);
+    private static void Hide(String imgPath, String filePath, int bitsPerByte) throws IOException {
+        HiddenFile hf = new HiddenFile(filePath, bitsPerByte);
+        MyImage img = hf.HideInImage(imgPath);
+        img.Write();
     }
-    private static void GetCapacity(String path) throws IOException{
+    private static void PrintCapacities(String path) throws IOException{
         // print capacities of picture
         MyImage img = new MyImage(path);
         int[] capacitiesPerbPB = img.GetCapacity();
@@ -32,14 +31,9 @@ public class Main {
         // TODO
     }
     public static void main(String[] args) throws IOException {
-        HiddenFile hf = new HiddenFile("shakespeare.txt", 1);
-        MyImage img = hf.hideInImage("stromovka.jpeg");
-        img.Write();
-//
-//
-//        GetCapacity("stromovka.jpeg");
-//        GetCapacity("small_red.png");
-
-//        HiddenFile.ExtractFromImage("stromovka.jpeg.jpeg");
+        Hide("small_white.png", "shakespeare.txt", 5);
+//        PrintCapacities("stromovka.jpeg");
+//        PrintCapacities("small_red.png");
+        HiddenFile.ExtractFromImage("small_white.png.png");
     }
 }
