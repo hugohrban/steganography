@@ -45,6 +45,12 @@ public final class HiddenFile {
      */
     public StegImage HideInImage(String imgPath) throws IOException{
         StegImage img = new StegImage(imgPath);
+        int imgCapacity = img.GetCapacity()[bitsPerByte - 1];
+        if (imgCapacity < data.length - 259){
+            System.out.println("Error: Image capacity is smaller than the hidden file size. " +
+                    "Use bigger image or smaller file.");
+            throw new IOException("Image capacity is smaller than the hidden file size.");
+        }
         int[] pixels = img.pixels;
         int data_ix = 0;
         byte buffer = data[data_ix];
@@ -78,7 +84,7 @@ public final class HiddenFile {
             }
         }
         if (data_ix < data.length-1){
-            throw new IOException("File is too large to be hidden in image.");
+            throw new IOException("Image capacity is smaller than the hidden file size.");
         }
         else {
             return img;

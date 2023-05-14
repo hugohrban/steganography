@@ -31,11 +31,13 @@ public final class StegImage {
      */
     public int[] GetCapacity(){
         int[] capacitiesPerbPB = new int[8];
-        int numPixels = pixels.length;
+        int numPixels = pixels.length - 28;                 // not including magic number
         for (int i = 1; i <= 8; i++){
-            capacitiesPerbPB[i-1] = numPixels * 4 * i;
+            capacitiesPerbPB[i-1] = numPixels * 4 * i;      // in bits
+            capacitiesPerbPB[i-1] /= 8;                     // in bytes
+            capacitiesPerbPB[i-1] -= 259;                   // not rest of header
         }
-        return capacitiesPerbPB;
+        return capacitiesPerbPB;                            // in bytes
     }
 
     /**
@@ -68,8 +70,11 @@ public final class StegImage {
     public void Write() throws IOException {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         img.setRGB(0,0,width, height, pixels, 0, width);
-        String pathName = path+".png";  //TODO
-        File output = new File(pathName);
+        // prepend steg_ to the img name
+        String newImgPath = path.substring(0, path.lastIndexOf(File.separator)+1) +
+                "steg_" + path.substring(path.lastIndexOf(File.separator)+1);
+        newImgPath = newImgPath.substring(0, newImgPath.lastIndexOf(".")) + ".png";
+        File output = new File(newImgPath);
         ImageIO.write(img, "png", output);
     }
 }
