@@ -1,11 +1,11 @@
 # Steganography
 
-### Description
+## Description
 This is a simple steganography tool that can be used to hide files in images 
 using least-significant bit encoding. 
 It can also be used to extract files from images that have files hidden in them.
 
-### Usage
+## Usage
 First to compile the program, change to the target directory which contains the 
 compiled classes  and finally run the program in interactive mode, 
 run the following commands:
@@ -16,7 +16,7 @@ java cz.cuni.mff.hrbanh.steganography.Main
 ```
 
 Running the command with no arguments will execute the program in interactive mode.
- ### Commands
+ ## Commands
     -h, --hide PATH_TO_IMAGE PATH_TO_FILE BITS_PER_BYTE
         
 Hides the content of the the file into the image. The image is loaded 
@@ -47,7 +47,7 @@ The command syntax is the same as above. Use the `exit` command to exit the prog
 
 Displays the help message.
 
-### Examples
+## Examples
 The `src/java/resources` directory contains a few sample images and files that can be used
 to test the program. Here are a few examples of how to use the program (first compile the
 program and change directory as described above):
