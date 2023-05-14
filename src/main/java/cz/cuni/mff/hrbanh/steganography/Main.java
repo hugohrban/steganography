@@ -17,9 +17,7 @@ public class Main {
     private static void Hide(String imgPath, String filePath, int bitsPerByte) throws IOException{
         HiddenFile hf = new HiddenFile(filePath, bitsPerByte);
         StegImage img = hf.HideInImage(imgPath);
-        if (img != null) {
-            img.Write();
-        }
+        img.Write();
     }
 
     /**

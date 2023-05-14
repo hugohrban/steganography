@@ -39,7 +39,7 @@ public final class HiddenFile {
      * The data is encoded as masking a certain number of least-significant bits of each byte of a pixel.
      * The pixels are in ARGB color space, therefore each pixel contains 4 bytes (A,R,G,B).
      * Returns an instance of `StegImage` with an encoded hidden file.
-     * @param imgPath
+     * @param imgPath path to the image
      * @return StegImage
      * @throws IOException if the `imgPath` is unreadable.
      */

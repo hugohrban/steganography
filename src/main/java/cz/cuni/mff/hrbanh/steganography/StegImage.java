@@ -10,16 +10,16 @@ import java.io.IOException;
  */
 public final class StegImage {
     /**
-     * Pixels of an underlying BufferedImage. Values are in the ARGB color space.
+     * Pixels of the underlying BufferedImage. Values are in the ARGB color space.
      */
     public int[] pixels;
 
     /**
-     * width of image in pixels
+     * Width of image in pixels
      */
     private int width;
     /**
-     * height of image in pixels
+     * Height of image in pixels
      */
     private int height;
     private final String path;
@@ -70,7 +70,7 @@ public final class StegImage {
     public void Write() throws IOException {
         BufferedImage img = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         img.setRGB(0,0,width, height, pixels, 0, width);
-        // prepend steg_ to the img name
+        // prepend steg_ to the img name and save in png format
         String newImgPath = path.substring(0, path.lastIndexOf(File.separator)+1) +
                 "steg_" + path.substring(path.lastIndexOf(File.separator)+1);
         newImgPath = newImgPath.substring(0, newImgPath.lastIndexOf(".")) + ".png";
